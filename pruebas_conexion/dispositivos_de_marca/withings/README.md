@@ -142,7 +142,7 @@ callback_uri = http://localhost:5000/get_token
 Con el entorno virtual activo, inicia el servidor Flask:
 
 ```bash
-python app.py
+python .\scripts\app.py
 ```
 
 La aplicación quedará disponible en:
