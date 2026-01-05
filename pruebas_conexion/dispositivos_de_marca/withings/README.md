@@ -155,7 +155,11 @@ http://localhost:5000
 
 ## 🧪 Cómo probar el flujo completo
 
-### 1️⃣ Iniciar autenticación
+Debes haber iniciado sesión en **Withings** y tener registrado un **smartwatch Withings** (por ejemplo ScanWatch) para utilizar la API.
+
+---
+
+## 1️⃣ Iniciar autenticación OAuth
 
 Abre en tu navegador:
 
@@ -163,19 +167,20 @@ Abre en tu navegador:
 http://localhost:5000/
 ```
 
-Serás redirigido a la página de login de Withings.
+Este endpoint inicia el flujo **OAuth 2.0** y te redirige automáticamente a la página de login de Withings.
 
 ---
 
 ### 2️⃣ Aceptar permisos
 
-Acepta los permisos solicitados por la aplicación:
+Acepta los permisos solicitados por la aplicación. En este código, los scopes configurados son:
 
 ```
 user.info,user.metrics
 ```
+> ⚠️ Para **Raw Data** se requieren permisos avanzados adicionales aprobados por Withings (Advanced Research API).
 
-Al finalizar, Withings redirigirá a:
+Al finalizar, Withings redirigirá automáticamente a:
 
 ```
 http://localhost:5000/get_token?code=XXX&state=YYY
@@ -187,18 +192,43 @@ http://localhost:5000/get_token?code=XXX&state=YYY
 
 El endpoint `/get_token`:
 
-- Intercambia el código por un access token
-- Guarda el token en memoria
-- Consulta los dispositivos del usuario
+- Intercambia el `code` OAuth por un **access token**
+- Guarda el token en memoria (session simple)
+- Consulta los dispositivos asociados al usuario usando **User v2 - Get**
+- Devuelve el token y la información de los dispositivos
 
 Ejemplo de respuesta:
 
 ```json
 {
-  "access_token": "ACCESS_TOKEN",
-  "devices": { ... }
+  "access_token": "ACCESTOKEN",
+  "devices": {
+    "status": 0,
+    "body": {
+      "devices": [
+        {
+          "battery": "",
+          "deviceid": "",
+          "first_session_date": 0,
+          "hash_deviceid": "",
+          "last_session_date": 0,
+          "model": "",
+          "model_id": 0,
+          "timezone": "",
+          "type": ""
+        }
+      ]
+    }
+  }
 }
 ```
+| 📌 Importante
+
+- El campo hash_deviceid es el identificador público del dispositivo
+
+- Este valor es obligatorio para usar la API de Raw Data
+
+- Guárdalo junto con el access_token
 
 ---
 
@@ -210,7 +240,7 @@ Endpoint:
 GET /measure/get
 ```
 
-Este endpoint utiliza la **Measure API (Getmeas)** de Withings.
+Este endpoint utiliza la Measure API – Getmeas de Withings y no requiere permisos avanzados.
 
 Ejemplo de respuesta:
 
@@ -228,19 +258,13 @@ Ejemplo de respuesta:
 
 ## 📊 Measure API
 
-Permite obtener:
+Permite obtener mediciones de salud ya procesadas, como:
 
 - Peso
 - Ritmo cardíaco
 - SpO2
 - Temperatura
 - Composición corporal
-
-Los valores deben interpretarse como:
-
-```
-valor_real = value × 10^unit
-```
 
 ---
 
@@ -256,7 +280,45 @@ Requieren **permisos avanzados** aprobados por Withings.
 Si no están habilitados, la API responderá:
 
 ```
-403 Insufficient_scope
+Insufficient_scope: The request requires higher privileges than provided by the access token
+```
+
+### 5️⃣ Activar captura de Raw Data (PPG)
+
+Para activar la captura de datos crudos, debes usar el access_token y el hash_deviceid obtenidos en el paso 3️⃣.
+
+Ejemplo de URL:
+
+```
+http://localhost:5000/rawdata/activate?access_token=ACCESSTOKEN&hash_deviceid=HASH
+```
+
+Respuesta esperada:
+
+```json
+{
+  "status": 0,
+  "body": {}
+}
+
+```
+
+### 6️⃣ Obtener Raw Data capturada
+
+Una vez que el reloj haya sincronizado y haya datos disponibles, puedes obtener los datos crudos usando:
+
+```
+http://localhost:5000/rawdata/get?access_token=ACCESSTOKEN&hash_deviceid=HASH
+```
+
+Respuesta esperada:
+
+```json
+{
+  "status": 0,
+  "body": {}
+}
+
 ```
 
 ---
