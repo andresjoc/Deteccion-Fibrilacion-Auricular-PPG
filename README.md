@@ -1,7 +1,5 @@
 # 🏥 Universidad Distrital Francisco Jose De Caldas
 
-## Grupo de Investigación VIRTUS
-
 ### Proyecto de Investigación
 
 ---
