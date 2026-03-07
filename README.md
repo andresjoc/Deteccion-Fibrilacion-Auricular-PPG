@@ -11,8 +11,6 @@
 ## Dirección del proyecto
 
 **Profesor responsable:** Jonathan Torres  
-**Grupo de investigación:** VIRTUS
-
 ---
 
 ## 📘 Descripción general
